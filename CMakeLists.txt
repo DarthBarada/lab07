@@ -10,3 +10,12 @@ add_executable(example2 ${CMAKE_CURRENT_SOURCE_DIR}/examples/example2.cpp)
 
 target_link_libraries(example1 print)
 target_link_libraries(example2 print)
+
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(third-party/gtest)
+  file(GLOB ${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
+  add_executable(check ${${PROJECT_NAME}_TEST_SOURCES})
+  target_link_libraries(check ${PROJECT_NAME} gtest_main)
+  add_test(NAME check COMMAND check)
+endif()
