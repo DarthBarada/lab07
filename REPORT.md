@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/DarthBarada/lab07.svg?branch=master)](https://travis-ci.com/DarthBarada/lab07)
 ## Laboratory work VII
 
 Данная лабораторная работа посвещена изучению систем управления пакетами на примере **Hunter**
