@@ -1,125 +1,141 @@
-## Laboratory work III
+[![Build Status](https://travis-ci.org/DarthBarada/lab05.svg?branch=master)](https://travis-ci.com/DarthBarada/lab05)
+## Laboratory work V
 
-Данная лабораторная работа посвещена изучению систем автоматизации сборки проекта на примере **CMake**
+Данная лабораторная работа посвещена изучению фреймворков для тестирования на примере **GTest**
 
 ```ShellSession
-$ open https://cmake.org/
+$ open https://github.com/google/googletest
 ```
 
 ## Tasks
 
-- [X] 1. Создать публичный репозиторий с названием **lab03** на сервисе **GitHub**
-- [X] 2. Ознакомиться со ссылками учебного материала
-- [X] 3. Выполнить инструкцию учебного материала
+- [X] 1. Создать публичный репозиторий с названием **lab05** на сервисе **GitHub**
+- [X] 2. Выполнить инструкцию учебного материала
+- [X] 3. Ознакомиться со ссылками учебного материала
 - [X] 4. Составить отчет и отправить ссылку личным сообщением в **Slack**
 
-## Введение
+## Tutorial
 
+Настройка окружения
 ```ShellSession
-$ export GITHUB_USERNAME=DarthBarada        # Усанавливаем параметры окружения
+$ export GITHUB_USERNAME=<имя_пользователя>
+$ alias gsed=sed # for *-nix system # Синоним команды gsed
 ```
-
+Подготовка окружения
 ```ShellSession
 $ cd ${GITHUB_USERNAME}/workspace
-$ pushd .                                   # Сохраняет имя текущего каталога для команды и переходит в другой каталог. 
+$ pushd .
 ~/DarthBarada/workspace ~/DarthBarada/workspace
-$ source scripts/activate                    # Активируем файл activate
+$ source scripts/activate
+```
+Получение файлов из lab04
+```ShellSession
+$ git clone https://github.com/${GITHUB_USERNAME}/lab04 projects/lab05  # Скачивание из удаленного репозитория в папку lab05
+Клонирование в «projects/lab05»…
+remote: Enumerating objects: 3021, done.
+remote: Counting objects: 100% (3021/3021), done.
+remote: Compressing objects: 100% (2312/2312), done.
+remote: Total 3021 (delta 531), reused 3005 (delta 523), pack-reused 0
+Получение объектов: 100% (3021/3021), 13.49 MiB | 5.09 MiB/s, готово.
+Определение изменений: 100% (531/531), готово.
+$ cd projects/lab05   # Переход в папку lab05
+$ git remote remove origin   # Удаление ссылки на удаленный репозиторий из локального
+$ git remote add origin https://github.com/${GITHUB_USERNAME}/lab05   # Указание новой ссылки на удаленный репозиторий
 ```
 
 ```ShellSession
-$ git clone https://github.com/${GITHUB_USERNAME}/lab02.git projects/lab03 # Копируем репозиторий lab02 с сайта в папку projects/lab03
-Cloning into 'projects/lab03'...
-remote: Enumerating objects: 19, done.
-remote: Counting objects: 100% (19/19), done.
-remote: Compressing objects: 100% (14/14), done.
-remote: Total 19 (delta 1), reused 13 (delta 0), pack-reused 0
-Unpacking objects: 100% (19/19), done.
-$ cd projects/lab03                                        # заходим в эту папку 
-$ git remote remove origin                                 # Устанавливаем удаленный доступ к моему репозитрию
-$ git remote add origin https://github.com/${GITHUB_USERNAME}/lab03.git
-```
+$ mkdir third-party   # Создание папки third-party
+$ git submodule add https://github.com/google/googletest third-party/gtest  # Скачивание удаленного репозитория в указанную папку
+Клонирование в «/home/darthbarada/DarthBarada/workspace/projects/lab05/third-party/gtest»…
+remote: Enumerating objects: 16863, done.
+remote: Total 16863 (delta 0), reused 0 (delta 0), pack-reused 16863
+Получение объектов: 100% (16863/16863), 5.75 MiB | 4.56 MiB/s, готово.
+Определение изменений: 100% (12438/12438), готово.
+$ cd third-party/gtest && git checkout release-1.8.1 && cd ../..  # Переход в указанную папку, переход в указанную ветку, возврат
+Примечание: переход на «release-1.8.1».
 
-```ShellSession 
-# Включаем поддержку с++ 11 года в g++, создаем файл example1, связываем его с print.hpp и запускаем коды
-$ g++ -std=c++11 -I./include -c sources/print.cpp
-$ ls print.o    # Проверить наличие файла
-print.o
-$ nm print.o | grep print    # Вывести символы, содержащиеся в объектном файле
-0000000000000095 t _GLOBAL__sub_I__Z5printRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERSo
-0000000000000000 T _Z5printRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERSo
-0000000000000026 T _Z5printRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERSt14basic_ofstreamIcS2_E
-$ ar rvs print.a print.o    # Создать архив (статическую библиотеку) 
-ar: creating print.a
-a - print.o
-$ file print.a  # Информация о файле print.a
-print.a: current ar archive
-$ g++ -std=c++11 -I./include -c examples/example1.cpp
-$ ls example1.o
-example1.o
-$ g++ example1.o print.a -o example1   # Связывание файла и статической библиотеки,вывод в example1
-$ ./example1 && echo   # Запустить полученный файл. И напечатать строку
-hello
-//---------------- Часть 2 --------------------
-$ g++ -std=c++11 -I./include -c examples/example2.cpp   # Компиляция source/example2.cpp, используя заголовки из ./include и стандарт C++11
-$ nm example2.o
- U __cxa_atexit
-                 U __dso_handle
-0000000000000000 V DW.ref.__gxx_personality_v0
-                 U _GLOBAL_OFFSET_TABLE_
-0000000000000163 t _GLOBAL__sub_I_main
-                 U __gxx_personality_v0
-0000000000000000 T main
-                 U __stack_chk_fail
-                 U _Unwind_Resume
-000000000000011a t _Z41__static_initialization_and_destruction_0ii
-                 U _Z5printRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERSt14basic_ofstreamIcS2_E
-                 U _ZNSaIcEC1Ev
-                 U _ZNSaIcED1Ev
-                 U _ZNSt14basic_ofstreamIcSt11char_traitsIcEEC1EPKcSt13_Ios_Openmode
-                 U _ZNSt14basic_ofstreamIcSt11char_traitsIcEED1Ev
-                 U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EPKcRKS3_
-                 U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev
-                 U _ZNSt8ios_base4InitC1Ev
-                 U _ZNSt8ios_base4InitD1Ev
-0000000000000000 r _ZStL19piecewise_construct
-0000000000000000 b _ZStL8__ioinit
-$ g++ example2.o print.a -o example2    # Связывание файла и статической библиотеки,вывод в example2
-$ ./example2                            # Исполнение example2
-$ cat log.txt && echo                   # выводим содержание log.txt
-hello
+Вы сейчас в состоянии «отделённого HEAD». Вы можете осмотреться, сделать
+экспериментальные изменения и закоммитить их, также вы можете отменить
+изменения любых коммитов в этом состоянии не затрагивая любые ветки и
+не переходя на них.
+
+Если вы хотите создать новую ветку и сохранить свои коммиты, то вы
+можете сделать это (сейчас или позже) вызвав команду checkout снова,
+но с параметром -b. Например:
+
+  git checkout -b <имя-новой-ветки>
+
+HEAD сейчас на 2fe3bd99 Merge pull request #1433 from dsacre/fix-clang-warnings
+$ git add third-party/gtest               # Фиксация изменений
+$ git commit -m"added gtest framework"    # Комментарий к зафиксированным изменениям
+[master 5ec7bb7] added gtest framework
+ Committer: darthbarada <darthbarada@localhost.localdomain>
+Ваше имя или электронная почта настроены автоматически на основании вашего
+имени пользователя и имени машины. Пожалуйста, проверьте, что они 
+определены правильно.
+Вы можете отключить это уведомление установив их напрямую. Запустите следующую
+команду и следуйте инструкциям вашего текстового редактора, для
+редактирования вашего файла конфигурации:
+
+    git config --global --edit
+
+После этого, изменить авторство этой коммита можно будет с помощью команды:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 4 insertions(+)
+ create mode 100644 .gitmodules
+ create mode 160000 third-party/gtest
 ```
 
 ```ShellSession
-// Удалем ненужные файлы
-$ rm -rf example1.o example2.o print.o
-$ rm -rf print.a
-$ rm -rf example1 example2
-$ rm -rf log.txt
+$ gsed -i '/option(BUILD_EXAMPLES "Build examples" OFF)/a\   # Вставить вторую строку после указанной первой строки
+option(BUILD_TESTS "Build tests" OFF)
+' CMakeLists.txt
+$ cat >> CMakeLists.txt <<EOF     # Дописывание в CMakeLists.txt указанного кода
+
+if(BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(third-party/gtest)
+  file(GLOB \${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
+  add_executable(check \${\${PROJECT_NAME}_TEST_SOURCES})
+  target_link_libraries(check \${PROJECT_NAME} gtest_main)
+  add_test(NAME check COMMAND check)
+endif()
+EOF
 ```
 
 ```ShellSession
-// Настраиваем Cmake
-$ cat > CMakeLists.txt <<EOF
-cmake_minimum_required(VERSION 3.4)
-project(print)
-EOF
+$ mkdir tests  # Создание указанной папки tests
+# Создание test1.cpp с кодом
+$ cat > tests/test1.cpp <<EOF
+#include <print.hpp>
 
-$ cat >> CMakeLists.txt <<EOF
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-EOF
+#include <gtest/gtest.h>
 
-$ cat >> CMakeLists.txt <<EOF
-add_library(print STATIC \${CMAKE_CURRENT_SOURCE_DIR}/sources/print.cpp)
-EOF
+TEST(Print, InFileStream)
+{
+  std::string filepath = "file.txt";
+  std::string text = "hello";
+  std::ofstream out{filepath};
 
-$ cat >> CMakeLists.txt <<EOF
-include_directories(\${CMAKE_CURRENT_SOURCE_DIR}/include)
+  print(text, out);
+  out.close();
+
+  std::string result;
+  std::ifstream in{filepath};
+  in >> result;
+
+  EXPECT_EQ(result, text);
+}
 EOF
-Компиляция
-$ cmake -H. -B_build
--- The C compiler identification is GNU 8.2.1
--- The CXX compiler identification is GNU 8.2.1
+```
+
+```ShellSession
+$ cmake -H. -B_build -DBUILD_TESTS=ON        # Конфигурирование
+. -B_build -DBUILD_TESTS=ON
+-- The C compiler identification is GNU 8.3.0
+-- The CXX compiler identification is GNU 8.3.0
 -- Check for working C compiler: /usr/bin/cc
 -- Check for working C compiler: /usr/bin/cc -- works
 -- Detecting C compiler ABI info
@@ -132,199 +148,222 @@ $ cmake -H. -B_build
 -- Detecting CXX compiler ABI info - done
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
+-- Found PythonInterp: /usr/bin/python (found version "2.7.16") 
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Looking for pthread_create
+-- Looking for pthread_create - not found
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - yes
+-- Found Threads: TRUE  
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_build
-$ cmake --build _build                            # Выполнение поставленных в CMakeLists.txt задач.
+-- Build files have been written to: /home/darthbarada/DarthBarada/workspace/projects/projects/lab05/_build
+
+$ cmake --build _build                 # Компиляция
 Scanning dependencies of target print
-[ 50%] Building CXX object CMakeFiles/print.dir/sources/print.cpp.o
-[100%] Linking CXX static library libprint.a
-[100%] Built target print
+[  8%] Building CXX object CMakeFiles/print.dir/sources/print.cpp.o
+[ 16%] Linking CXX static library libprint.a
+[ 16%] Built target print
+Scanning dependencies of target gtest
+[ 25%] Building CXX object third-party/gtest/googlemock/gtest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[ 33%] Linking CXX static library libgtest.a
+[ 33%] Built target gtest
+Scanning dependencies of target gtest_main
+[ 41%] Building CXX object third-party/gtest/googlemock/gtest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[ 50%] Linking CXX static library libgtest_main.a
+[ 50%] Built target gtest_main
+Scanning dependencies of target check
+[ 58%] Building CXX object CMakeFiles/check.dir/tests/test1.cpp.o
+[ 66%] Linking CXX executable check
+[ 66%] Built target check
+Scanning dependencies of target gmock
+[ 75%] Building CXX object third-party/gtest/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[ 83%] Linking CXX static library libgmock.a
+[ 83%] Built target gmock
+Scanning dependencies of target gmock_main
+[ 91%] Building CXX object third-party/gtest/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o
+[100%] Linking CXX static library libgmock_main.a
+[100%] Built target gmock_main
+$ cmake --build _build --target test      # Компиляция указанной цели
+Running tests...
+Test project /home/darthbarada/DarthBarada/workspace/projects/projects/lab05/_build
+    Start 1: check
+1/1 Test #1: check ............................   Passed    0.00 sec
 
-$ cat >> CMakeLists.txt <<EOF
+100% tests passed, 0 tests failed out of 1
 
-add_executable(example1 \${CMAKE_CURRENT_SOURCE_DIR}/examples/example1.cpp)
-add_executable(example2 \${CMAKE_CURRENT_SOURCE_DIR}/examples/example2.cpp)
-EOF
-
-$ cat >> CMakeLists.txt <<EOF
-
-target_link_libraries(example1 print)
-target_link_libraries(example2 print)
-EOF
+Total Test time (real) =   0.02 sec
 ```
 
-Билдим в Сmake наши файлы с кодом С++
+```ShellSession
+$ _build/check                      # Выполнение исполняемого файла с тестами
+Running main() from /home/darthbarada/DarthBarada/workspace/projects/projects/lab05/third-party/gtest/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from Print
+[ RUN      ] Print.InFileStream
+[       OK ] Print.InFileStream (0 ms)
+[----------] 1 test from Print (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (0 ms total)
+[  PASSED  ] 1 test.
+$ cmake --build _build --target test -- ARGS=--verbose        # Компиляция с выводом всей информации
+Running tests...
+UpdateCTestConfiguration  from :/home/darthbarada/DarthBarada/workspace/projects/projects/lab05/_build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/home/darthbarada/DarthBarada/workspace/projects/projects/lab05/_build/DartConfiguration.tcl
+Test project /home/darthbarada/DarthBarada/workspace/projects/projects/lab05/_build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: check
+
+1: Test command: /home/darthbarada/DarthBarada/workspace/projects/projects/lab05/_build/check
+1: Test timeout computed to be: 10000000
+1: Running main() from /home/darthbarada/DarthBarada/workspace/projects/projects/lab05/third-party/gtest/googletest/src/gtest_main.cc
+1: [==========] Running 1 test from 1 test case.
+1: [----------] Global test environment set-up.
+1: [----------] 1 test from Print
+1: [ RUN      ] Print.InFileStream
+1: [       OK ] Print.InFileStream (0 ms)
+1: [----------] 1 test from Print (0 ms total)
+1: 
+1: [----------] Global test environment tear-down
+1: [==========] 1 test from 1 test case ran. (0 ms total)
+1: [  PASSED  ] 1 test.
+1/1 Test #1: check ............................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.01 sec
+
 ```
-$ cmake --build _build
--- Configuring done
--- Generating done
--- Build files have been written to: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_build
-[ 33%] Built target print
-Scanning dependencies of target example2
-[ 50%] Building CXX object CMakeFiles/example2.dir/examples/example2.cpp.o
-[ 66%] Linking CXX executable example2
-[ 66%] Built target example2
-Scanning dependencies of target example1
-[ 83%] Building CXX object CMakeFiles/example1.dir/examples/example1.cpp.o
-[100%] Linking CXX executable example1
-[100%] Built target example1
-$ cmake --build _build --target print
-[100%] Built target print
-$ cmake --build _build --target example1
-[ 50%] Built target print
-[100%] Built target example1
-$ cmake --build _build --target example2
-[ 50%] Built target print
-[100%] Built target example2
+
+```ShellSession
+$ gsed -i 's/lab04/lab05/g' README.md           # Замена левой строки на правую
+$ gsed -i 's/\(DCMAKE_INSTALL_PREFIX=_install\)/\1 -DBUILD_TESTS=ON/' .travis.yml 
+$ gsed -i '/cmake --build _build --target install/a\      # Дописывание правой строки после найденной левой строки
+- cmake --build _build --target test -- ARGS=--verbose
+' .travis.yml
 ```
-Выводим в cmd результаты работ наших кодов
+
+```ShellSession
+$ travis lint      # Проверка .travis.yml
+Warnings for .travis.yml:
+[x] value for addons section is empty, dropping
+[x] in addons section: unexpected key apt, dropping
 ```
-$ ls -la _build/libprint.a    # Проверить наличие файла и вывести информацию о нем
--rw-r--r-- 1 darthbarada darthbarada 3118 апр 29 12:33 _build/libprint.a
-$ _build/example1 && echo   # Выполнить example1 и вывести перенос строки
-hello 
-$ _build/example2           # Выполнить example2
-$ cat log.txt && echo       # Напечатать log.txt в консоль и вывести перенос строки
-hello
-$ rm -rf log.txt            # Рекурсивно и без подтверждения удалить log.txt
-```
-Получение CMakeLists.txt из репозитория
-```
-$ git clone https://github.com/tp-labs/lab03 tmp    # Скачивание репозитория в директорию tmp
-Cloning into 'tmp'...
-remote: Enumerating objects: 24, done.
-remote: Counting objects: 100% (24/24), done.
-remote: Compressing objects: 100% (18/18), done.
-remote: Total 67 (delta 4), reused 24 (delta 4), pack-reused 43
-Unpacking objects: 100% (67/67), done.
-$ mv -f tmp/CMakeLists.txt .   # Перемещение CMakeLists.txt в текущую директорию
-$ rm -rf tmp                   # Удаление директории tmp
 
-$ cat CMakeLists.txt  # Вывод CMakeLists.txt в консоль
-cmake_minimum_required(VERSION 3.0)
+```ShellSession
+$ git add .travis.yml     # Фиксация указанного файла
+$ git add tests           # Фиксация указанного файла
+$ git add -p               # Фиксация указанного файла.
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 05cc72b..176b7ba 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 11)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ option(BUILD_EXAMPLES "Build examples" OFF)
++option(BUILD_TESTS "Build tests" OFF)
+ 
+ project(print)
+ 
+Stage this hunk [y,n,q,a,d,j,J,g,/,e,?]? y
+@@ -34,3 +35,12 @@ install(TARGETS print
+ 
+ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
+ install(EXPORT print-config DESTINATION cmake)
++
++if(BUILD_TESTS)
++  enable_testing()
++  add_subdirectory(third-party/gtest)
++  file(GLOB ${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
++  add_executable(check ${${PROJECT_NAME}_TEST_SOURCES})
++  target_link_libraries(check ${PROJECT_NAME} gtest_main)
++  add_test(NAME check COMMAND check)
++endif()
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+@@ -34,3 +35,12 @@ install(TARGETS print
+ 
+ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
+ install(EXPORT print-config DESTINATION cmake)
++
++if(BUILD_TESTS)
++  enable_testing()
++  add_subdirectory(third-party/gtest)
++  file(GLOB ${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
++  add_executable(check ${${PROJECT_NAME}_TEST_SOURCES})
++  target_link_libraries(check ${PROJECT_NAME} gtest_main)
++  add_test(NAME check COMMAND check)
++endif()
+$ git add .   
+$ git commit -m"added tests"  # Комментарий изменений
+[master ef161e8] added tests
+ 4 files changed, 35 insertions(+), 5 deletions(-)
+ create mode 100644 tests/test1.cpp
 
-option(BUILD_EXAMPLES "Build examples" OFF)
-
-project(print)
-
-add_library(print STATIC ${CMAKE_CURRENT_SOURCE_DIR}/sources/print.cpp)
-
-target_include_directories(print PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
-
-if(BUILD_EXAMPLES)
-  file(GLOB EXAMPLE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.cpp")
-  foreach(EXAMPLE_SOURCE ${EXAMPLE_SOURCES})
-    get_filename_component(EXAMPLE_NAME ${EXAMPLE_SOURCE} NAME_WE)
-    add_executable(${EXAMPLE_NAME} ${EXAMPLE_SOURCE})
-    target_link_libraries(${EXAMPLE_NAME} print)
-    install(TARGETS ${EXAMPLE_NAME}
-      RUNTIME DESTINATION bin
-    )
-  endforeach(EXAMPLE_SOURCE ${EXAMPLE_SOURCES})
-endif()
-
-install(TARGETS print
-    EXPORT print-config
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-)
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
-install(EXPORT print-config DESTINATION cmake)
-$ cmake -H. -B_build -DCMAKE_INSTALL_PREFIX=_install
--- Configuring done
--- Generating done
--- Build files have been written to: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_build
-$ cmake --build _build --target install
--- Install configuration: ""
--- Installing: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_install/lib/libprint.a
--- Installing: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_install/include
--- Installing: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_install/include/print.hpp
--- Installing: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_install/cmake/print-config.cmake
--- Installing: /home/starkiller/Documents/DarthBarada/workspace/projects/lab03/_install/cmake/print-config-noconfig.cmake
-$ tree _install                                         # Вывод дерева файлов
-_install
-├── cmake
-│   ├── print-config.cmake
-│   └── print-config-noconfig.cmake
-├── include
-│   └── print.hpp
-└── lib
-    └── libprint.a
-
-3 directories, 4 files
-
-$ git add CMakeLists.txt    # Фиксация файла CMakeLists.txt  
-$ git commit -m"added CMakeLists.txt" # Добавляем коммит
-$ git push origin master   # Отправка изменений
+$ git push origin master  # Отправка изменений в удаленный репозиторий
 Username for 'https://github.com': DarthBarada
 Password for 'https://DarthBarada@github.com': 
-Enumerating objects: 22, done.
-Counting objects: 100% (22/22), done.
-Delta compression using up to 4 threads
-Compressing objects: 100% (17/17), done.
-Writing objects: 100% (22/22), 7.68 KiB | 5.41 MiB/s, done.
-Total 22 (delta 2), reused 0 (delta 0)
-remote: Resolving deltas: 100% (2/2), done.
-To https://github.com/DarthBarada/lab03.git
+Перечисление объектов: 3029, готово.
+Подсчет объектов: 100% (3029/3029), готово.
+При сжатии изменений используется до 4 потоков
+Сжатие объектов: 100% (2312/2312), готово.
+Запись объектов: 100% (3029/3029), 13.49 MiB | 726.00 KiB/s, готово.
+Всего 3029 (изменения 534), повторно использовано 3014 (изменения 529)
+remote: Resolving deltas: 100% (534/534), done.
+To https://github.com/DarthBarada/lab05
  * [new branch]      master -> master
 ```
 
-## Отправляем отчет
-
+```ShellSession
+$ travis login --auto  # Не запустилось, потому что раньше я привязал свой travis к аккаунту c github
+$ travis enable # Включение непрерывной интеграции для репозитория
+DarthBarada/lab05: enabled :)
 ```
+
+```ShellSession
+$ mkdir artifacts    # Создание директории artifacts
+$ sleep 20s && gnome-screenshot --file artifacts/screenshot.png # команда ждёт 20 сек, потом делает снимок с экрана в папку с именем creenshot.png
+# for macOS: $ screencapture -T 20 artifacts/screenshot.png
+# open https://github.com/${GITHUB_USERNAME}/lab05
+```
+
+## Report
+
+```ShellSession
 $ popd
-$ export LAB_NUMBER=03
+$ export LAB_NUMBER=05
 $ git clone https://github.com/tp-labs/lab${LAB_NUMBER} tasks/lab${LAB_NUMBER}
-# копирем репозиторий lab03 в tasks соответствующей папки 
-$ mkdir reports/lab${LAB_NUMBER} 
-#Создаем в отчетах соответсвующую папку лабы и добавляем в неё файл REPORT.md
-#который является копией README.md из папки tasks соответствуюей лабы
+$ mkdir reports/lab${LAB_NUMBER}
 $ cp tasks/lab${LAB_NUMBER}/README.md reports/lab${LAB_NUMBER}/REPORT.md
 $ cd reports/lab${LAB_NUMBER}
-$ edit REPORT.md // редактируем файл
+$ edit REPORT.md
 $ gistup -m "lab${LAB_NUMBER}"
 ```
 
 ## Homework
 
-Представьте, что вы стажер в компании "Formatter Inc.".
-### Задание 1
-Вам поручили перейти на систему автоматизированной сборки **CMake**.
-Исходные файлы находятся в директории [formatter_lib](formatter_lib).
-В этой директории находятся файлы для статической библиотеки *formatter*.
-Создайте `CMakeList.txt` в директории [formatter_lib](formatter_lib),
-с помощью которого можно будет собирать статическую библиотеку *formatter*.
-
-### Задание 2
-У компании "Formatter Inc." есть перспективная библиотека,
-которая является расширением предыдущей библиотеки. Т.к. вы уже овладели
-навыком созданием `CMakeList.txt` для статической библиотеки *formatter*, ваш 
-руководитель поручает заняться созданием `CMakeList.txt` для библиотеки 
-*formatter_ex*, которая в свою очередь использует библиотеку *formatter*.
-
-### Задание 3
-Конечно же ваша компания предоставляет примеры использования своих библиотек.
-Чтобы продемонстрировать как работать с библиотекой *formatter_ex*,
-вам необходимо создать два `CMakeList.txt` для двух простых приложений:
-* *hello_world*, которое использует библиотеку *formatter_ex*;
-* *solver*, приложение которое испольует статические библиотеки *formatter_ex* и *solver_lib*.
-
-**Удачной стажировки!**
+### Задание
+1. Создайте `CMakeList.txt` для библиотеки *banking*.
+2. Создайте модульные тесты на классы `Transaction` и `Account`.
+    * Используйте mock-объекты.
+    * Покрытие кода должно составлять 100%.
+3. Настройте сборочную процедуру на **TravisCI**.
+4. Настройте [Coveralls.io](https://coveralls.io/).
 
 ## Links
-- [Основы сборки проектов на С/C++ при помощи CMake](https://eax.me/cmake/)
-- [CMake Tutorial](http://neerc.ifmo.ru/wiki/index.php?title=CMake_Tutorial)
-- [C++ Tutorial - make & CMake](https://www.bogotobogo.com/cplusplus/make.php)
-- [Autotools](http://www.gnu.org/software/automake/manual/html_node/Autotools-Introduction.html)
-- [CMake](https://cgold.readthedocs.io/en/latest/index.html)
+
+- [C++ CI: Travis, CMake, GTest, Coveralls & Appveyor](http://david-grs.github.io/cpp-clang-travis-cmake-gtest-coveralls-appveyor/)
+- [Boost.Tests](http://www.boost.org/doc/libs/1_63_0/libs/test/doc/html/)
+- [Catch](https://github.com/catchorg/Catch2)
 
 ```
 Copyright (c) 2015-2019 The ISC Authors
