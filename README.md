@@ -1,4 +1,5 @@
-## Laboratory work V
+[![Build Status](https://travis-ci.org/DarthBarada/lab05.svg?branch=master)](https://travis-ci.com/DarthBarada/lab05)
+Laboratory work V
 
 Данная лабораторная работа посвещена изучению фреймворков для тестирования на примере **GTest**
 
